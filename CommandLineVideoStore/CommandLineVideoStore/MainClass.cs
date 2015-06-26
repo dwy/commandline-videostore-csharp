@@ -5,6 +5,8 @@ using System.IO;
 
 namespace CommandLineVideoStore
 {
+    using System.Reflection.Emit;
+
     public class MainClass
     {
         private readonly TextReader _in;
@@ -56,39 +58,15 @@ namespace CommandLineVideoStore
                 {
                     break;
                 }
-                string[] rental = input.Split(' ');
-                Movie movie = movies[int.Parse(rental[0])];
-                decimal thisAmount = 0;
-
-                int daysRented = int.Parse(rental[1]);
-                //determine amounts for rental
-                switch (movie.Category)
-                {
-                    case "REGULAR":
-                        thisAmount += 2;
-                        if (daysRented > 2)
-                            thisAmount += (daysRented - 2)*1.5m;
-                        break;
-                    case "NEW_RELEASE":
-                        thisAmount += daysRented*3;
-                        break;
-                    case "CHILDRENS":
-                        thisAmount += 1.5m;
-                        if (daysRented > 3)
-                            thisAmount += (daysRented - 3)*1.5m;
-                        break;
-                }
+                string[] rentalData = input.Split(' ');
+                var rental = new Rental(movies[int.Parse(rentalData[0])], int.Parse(rentalData[1]));
 
                 // add frequent renter points
-                frequentRenterPoints++;
-                // add bonus for a two day new release rental
-                if (movie.Category.Equals("NEW_RELEASE") && daysRented > 1)
-                {
-                    frequentRenterPoints++;
-                }
+                frequentRenterPoints += rental.GetFrequentRenterPoints();
+
                 // show figures for this rental
-                result += "\t" + movie.Name + "\t" + thisAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
-                totalAmount += thisAmount;
+                result += "\t" + rental.GetMovieName() + "\t" + rental.GetAmount().ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+                totalAmount += rental.GetAmount();
             }
 
             // add footer lines
