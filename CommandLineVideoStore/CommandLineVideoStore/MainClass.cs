@@ -4,15 +4,13 @@ using System.IO;
 
 namespace CommandLineVideoStore
 {
-    using System.Collections.Generic;
-    using System.Reflection.Emit;
-
     public class MainClass
     {
         private readonly TextReader _in;
         private readonly TextWriter _out;
-        private readonly MovieRepository movieRepository = new MovieRepository();
+        private readonly MovieRepository movieRepository;
 
+        private readonly RentalFactory rentalFactory;
 
         public static void Main()
         {
@@ -24,6 +22,8 @@ namespace CommandLineVideoStore
         {
             _out = @out;
             _in = @in;
+            this.movieRepository = new MovieRepository();
+            this.rentalFactory = new RentalFactory(movieRepository);
         }
 
         public void Run()
@@ -50,7 +50,7 @@ namespace CommandLineVideoStore
                     break;
                 }
                 string[] rentalData = input.Split(' ');
-                var rental = new Rental(this.movieRepository.GetByKey(int.Parse(rentalData[0])), int.Parse(rentalData[1]));
+                Rental rental = this.rentalFactory.CreateFrom(rentalData);
 
                 // add frequent renter points
                 frequentRenterPoints += rental.GetFrequentRenterPoints();
