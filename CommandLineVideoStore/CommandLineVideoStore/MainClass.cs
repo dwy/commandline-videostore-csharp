@@ -11,7 +11,6 @@ namespace CommandLineVideoStore
         private readonly TextReader _in;
         private readonly TextWriter _out;
         private readonly MovieRepository movieRepository;
-
         private readonly RentalFactory rentalFactory;
 
         public static void Main()
@@ -42,43 +41,20 @@ namespace CommandLineVideoStore
             _out.WriteLine("Choose movie by number followed by rental days, just ENTER for bill:");
 
             List<Rental> rentals = this.InputRentals();
+            var rentalRecord = new RentalRecord(customerName, rentals);
+            string result = "Rental Record for " + rentalRecord.CustomerName + "\n";
 
-            int frequentRenterPoints = this.GetFrequentRenterPoints(rentals);
-            string result = "Rental Record for " + customerName + "\n";
-            decimal totalAmount = this.GetTotalAmount(rentals);
-
-            foreach (var rental in rentals)
+            foreach (var rental in rentalRecord.Rentals)
             {
                 // show figures for this rental
                 result += "\t" + rental.GetMovieName() + "\t" + rental.GetAmount().ToString("0.0", CultureInfo.InvariantCulture) + "\n";
             }
 
             // add footer lines
-            result += "You owed " + totalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
-            result += "You earned " + frequentRenterPoints + " frequent renter points\n";
+            result += "You owed " + rentalRecord.GetTotalAmount().ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+            result += "You earned " + rentalRecord.GetFrequentRenterPoints() + " frequent renter points\n";
 
             _out.Write(result);
-        }
-
-        private int GetFrequentRenterPoints(List<Rental> rentals)
-        {
-            int frequentRenterPoints = 0;
-            foreach (var rental in rentals)
-            {
-                // add frequent renter points
-                frequentRenterPoints += rental.GetFrequentRenterPoints();
-            }
-            return frequentRenterPoints;
-        }
-
-        private decimal GetTotalAmount(List<Rental> rentals)
-        {
-            decimal totalAmount = 0;
-            foreach (var rental in rentals)
-            {
-                totalAmount += rental.GetAmount();
-            }
-            return totalAmount;
         }
 
         private List<Rental> InputRentals()
