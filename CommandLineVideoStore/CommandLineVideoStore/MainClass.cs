@@ -4,6 +4,8 @@ using System.IO;
 
 namespace CommandLineVideoStore
 {
+    using System.Collections.Generic;
+
     public class MainClass
     {
         private readonly TextReader _in;
@@ -39,9 +41,49 @@ namespace CommandLineVideoStore
 
             _out.WriteLine("Choose movie by number followed by rental days, just ENTER for bill:");
 
-            decimal totalAmount = 0;
-            int frequentRenterPoints = 0;
+            List<Rental> rentals = this.InputRentals();
+
+            int frequentRenterPoints = this.GetFrequentRenterPoints(rentals);
             string result = "Rental Record for " + customerName + "\n";
+            decimal totalAmount = this.GetTotalAmount(rentals);
+
+            foreach (var rental in rentals)
+            {
+                // show figures for this rental
+                result += "\t" + rental.GetMovieName() + "\t" + rental.GetAmount().ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+            }
+
+            // add footer lines
+            result += "You owed " + totalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
+            result += "You earned " + frequentRenterPoints + " frequent renter points\n";
+
+            _out.Write(result);
+        }
+
+        private int GetFrequentRenterPoints(List<Rental> rentals)
+        {
+            int frequentRenterPoints = 0;
+            foreach (var rental in rentals)
+            {
+                // add frequent renter points
+                frequentRenterPoints += rental.GetFrequentRenterPoints();
+            }
+            return frequentRenterPoints;
+        }
+
+        private decimal GetTotalAmount(List<Rental> rentals)
+        {
+            decimal totalAmount = 0;
+            foreach (var rental in rentals)
+            {
+                totalAmount += rental.GetAmount();
+            }
+            return totalAmount;
+        }
+
+        private List<Rental> InputRentals()
+        {
+            var rentals = new List<Rental>();
             while (true)
             {
                 string input = this._in.ReadLine();
@@ -51,20 +93,9 @@ namespace CommandLineVideoStore
                 }
                 string[] rentalData = input.Split(' ');
                 Rental rental = this.rentalFactory.CreateFrom(rentalData);
-
-                // add frequent renter points
-                frequentRenterPoints += rental.GetFrequentRenterPoints();
-
-                // show figures for this rental
-                result += "\t" + rental.GetMovieName() + "\t" + rental.GetAmount().ToString("0.0", CultureInfo.InvariantCulture) + "\n";
-                totalAmount += rental.GetAmount();
+                rentals.Add(rental);
             }
-
-            // add footer lines
-            result += "You owed " + totalAmount.ToString("0.0", CultureInfo.InvariantCulture) + "\n";
-            result += "You earned " + frequentRenterPoints + " frequent renter points\n";
-
-            _out.Write(result);
+            return rentals;
         }
     }
 }
