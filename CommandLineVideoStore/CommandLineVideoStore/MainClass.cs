@@ -1,16 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
 namespace CommandLineVideoStore
 {
+    using System.Collections.Generic;
     using System.Reflection.Emit;
 
     public class MainClass
     {
         private readonly TextReader _in;
         private readonly TextWriter _out;
+        private readonly MovieRepository movieRepository = new MovieRepository();
+
 
         public static void Main()
         {
@@ -27,20 +29,9 @@ namespace CommandLineVideoStore
         public void Run()
         {
             // read movies from file
-            var movies = new Dictionary<int, Movie>();
-            using (FileStream fs = File.Open(@"movies.cvs", FileMode.Open, FileAccess.Read))
-            using (BufferedStream bs = new BufferedStream(fs))
-            using (StreamReader reader = new StreamReader(bs))
+            foreach (Movie movie in this.movieRepository.GetAll())
             {
-                while (!reader.EndOfStream)
-                {
-                    string line = reader.ReadLine();
-                    string[] movieData = line.Split(';');
-                    var movie = new Movie(int.Parse(movieData[0]), movieData[1], movieData[2]);
-                    movies.Add(movie.Key, movie);
-
-                    _out.WriteLine(movie.Key + ": " + movie.Name);
-                }
+                this._out.WriteLine(movie.Key + ": " + movie.Name);
             }
 
             _out.Write("Enter customer name: ");
@@ -59,7 +50,7 @@ namespace CommandLineVideoStore
                     break;
                 }
                 string[] rentalData = input.Split(' ');
-                var rental = new Rental(movies[int.Parse(rentalData[0])], int.Parse(rentalData[1]));
+                var rental = new Rental(this.movieRepository.GetByKey(int.Parse(rentalData[0])), int.Parse(rentalData[1]));
 
                 // add frequent renter points
                 frequentRenterPoints += rental.GetFrequentRenterPoints();
