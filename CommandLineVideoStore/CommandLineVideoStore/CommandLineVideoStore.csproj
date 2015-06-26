@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="MainClass.cs" />
     <Compile Include="MainTest.cs" />
+    <Compile Include="Movie.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
