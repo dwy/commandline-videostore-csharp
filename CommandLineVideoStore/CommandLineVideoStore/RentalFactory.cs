@@ -1,5 +1,7 @@
 namespace CommandLineVideoStore
 {
+    using System.IO;
+
     public class RentalFactory
     {
         private readonly MovieRepository movieRepository;
@@ -13,8 +15,16 @@ namespace CommandLineVideoStore
         {
             Movie movie = movieRepository.GetByKey(int.Parse(rentalData[0]));
             int daysRented = int.Parse(rentalData[1]);
-            var rental = new Rental(movie, daysRented);
-            return rental;
+            switch (movie.Category)
+            {
+                case "REGULAR":
+                    return new RegularRental(movie, daysRented);
+                case "CHILDRENS":
+                    return new ChildrensRental(movie, daysRented);
+                case "NEW_RELEASE":
+                    return new NewReleaseRental(movie, daysRented);
+            }
+            throw new InvalidDataException("unknown category: " + movie.Category);
         }
     }
 }
